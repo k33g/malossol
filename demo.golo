@@ -1,11 +1,30 @@
-Malossol
-========
+module demo
 
-Golo BDD dsl
+import acme.Toon
+import gololang.Async
 
-You can test Golo code, but Java too!
+import malossol
 
-```coffeescript
+----
+ Create your own matcher
+----
+augmentation halfMatcher = {
+  function toBeHalf = |this, expectedValue| {
+    require(
+      this: actualValue(): equals(expectedValue/2), 
+      this: actualValue() + " isn't half " + expectedValue
+    )
+    println(" OK: " + this: actualValue() + " is half " + expectedValue)
+    return this
+  }
+}
+----
+ Add the matcher to matchers
+----
+augment malossol.types.matchers with halfMatcher
+
+function main = |args| {
+
   describe("Search something ...", {
     it("code response is 200", {
       
@@ -39,5 +58,5 @@ You can test Golo code, but Java too!
     })
 
   })
-```
 
+}
