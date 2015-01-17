@@ -26,12 +26,19 @@ augment malossol.types.matchers with halfMatcher
 function main = |args| {
 
   describe("Search something ...", {
-    it("code response is 200", {
-      
-      getAndWaitHttpRequest("http://www.google.com", HTML())
-        : onSet(|response| {
-            expect(response: code()): toEqual(200): toBeInteger()
-          })
+    it("code response is 200 and request duration is less than 2000 ms", {
+
+      timer(): start(|self| {
+        # synchronous request
+        let response = getHttp("http://www.google.com", HTML())
+        expect(response: code()): toEqual(200)
+
+      }): stop(|self| {
+
+        expect(self: duration()): toBeLessThan(2000_L)
+      })
+
+
     })
   })
 

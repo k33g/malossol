@@ -22,6 +22,16 @@ augment matchers {
     println(" OK: " + this: actualValue() + " is not equal to " + expectedValue)
     return this
   }
+  function toBeLessThan = |this, expectedValue| {
+    require(this: actualValue() < expectedValue, this: actualValue() + " isn't less than " + expectedValue)
+    println(" OK: " + this: actualValue() + " is less than " + expectedValue)
+    return this
+  }
+  function notToBeLessThan = |this, expectedValue| {
+    require(not this: actualValue() < expectedValue, this: actualValue() + " is less than " + expectedValue)
+    println(" OK: " + this: actualValue() + " is not less than " + expectedValue)
+    return this
+  }
   function toBeInteger = |this| {
     require(this: actualValue() oftype Integer.class, this: actualValue() + " is not an Integer")
     println(" OK: " + this: actualValue() + " is an Integer")
@@ -59,7 +69,7 @@ struct response = {
   text
 }
 
-local function getHttp = |url, contenType| {
+function getHttp = |url, contenType| {
   try {
     let obj = java.net.URL(url) # URL obj
     let con = obj: openConnection() # HttpURLConnection
@@ -83,56 +93,38 @@ local function getHttp = |url, contenType| {
 }
 
 
-
-# asynchronous tools
-
-
+# Tools
 ----
-  Promise helper: it's easier to make asynchronous work
-  Augmentation of gololang.concurrent.async.Promise
-----
-augment gololang.concurrent.async.Promise {
-----
- `env` is a worker environment
-----
-  function initializeWithWorker = |this, env, closure| {
-    env: spawn(|message| {
-      this: initialize(closure)
-    }): send("")
-    return this: future()
-  }
-----
- ...
-----
-  function initializeWithThread = |this, closure| {
-    Thread({
-      this: initialize(closure)
-    }): start()
-    return this: future()
-  }
-----
- ...
-----
-  function initializeWithJoinedThread = |this, closure| {
-    let t = Thread({
-      this: initialize(closure)
-    })
-    t: start()
-    t: join()
-    return this: future()
-  }
-}
-
-# promise tools
-function getAndWaitHttpRequest = |url, contentType| {
-  return promise(): initializeWithJoinedThread(|resolve, reject| {
-    try {
-      let r = getHttp(url, contentType)
-      resolve(r)
-    } catch (e) {
-      reject(e)
-    }
+  let t = timer(): start(|self| {
+    Thread.sleep(500_L)
+  }): stop(|self|{
+    println(self: duration() + " ms")
   })
+----
+struct timer = {
+  begin, end, duration
+}
+augment timer {
+  function start = |this| {
+    this: begin(java.lang.System.currentTimeMillis())
+    return this
+  }
+  function start = |this, callback| {
+    this: begin(java.lang.System.currentTimeMillis())
+    callback(this)
+    return this
+  }
+  function stop = |this| {
+    this: end(java.lang.System.currentTimeMillis())
+    this: duration(this: end() - this: begin())
+    return this
+  }
+  function stop = |this, callback| {
+    this: end(java.lang.System.currentTimeMillis())
+    this: duration(this: end() - this: begin())
+    callback(this)
+    return this
+  }
 }
 
 
