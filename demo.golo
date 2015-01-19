@@ -48,6 +48,16 @@ function main = |args| {
     })
   })
 
+  describe("Test some strings", {
+    it("string contains 'world'", {
+      expect("hello world!"): toContain("world")
+    })
+
+    it("string starts with 'hello'", {
+      expect("hello world!"): toStartWith("hello")
+    })
+  })
+
   describe("Testing Java: Elmira", {
 
     let Elmira = Toon("Elmira")
